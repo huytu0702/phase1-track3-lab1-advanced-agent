@@ -108,11 +108,9 @@ sequenceDiagram
         Runtime-->>Agent: JudgeResult + call metrics
         alt score == 1
             Agent-->>Runner: RunRecord success
-            break
         else score == 0
             alt adaptive stop triggers
-                Agent-->>Runner: stop early
-                break
+                Note over Agent,Runner: stop early
             else continue
                 Agent->>Runtime: reflector(example, answer, judge, attempt_id, reflection_memory, trajectory)
                 Runtime-->>Agent: ReflectionEntry + call metrics
