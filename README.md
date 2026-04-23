@@ -1,41 +1,73 @@
-# Lab 16 — Reflexion Agent Scaffold
+# Reflexion Agent Lab (OpenAI-Compatible)
 
-Repo này cung cấp một khung sườn (scaffold) để xây dựng và đánh giá **Reflexion Agent**.
+This repo benchmarks `react` vs `reflexion` on HotpotQA-style multi-hop QA with:
+- strict structured evaluator JSON,
+- reflection memory across attempts,
+- adaptive early stopping.
 
-## 1. Mục tiêu của Repo
-- Repo hiện tại đang sử dụng **Mock Data** (`mock_runtime.py`) để giả lập phản hồi từ LLM.
-- Mục đích giúp học viên hiểu rõ về **flow**, các bước **loop**, cách thức hoạt động của cơ chế phản chiếu (reflection) và cách đánh giá (evaluation) mà không tốn chi phí API ban đầu.
+## Setup
 
-## 2. Nhiệm vụ của Học viên
-Học viên cần thực hiện các bước sau để hoàn thành bài lab:
-1. **Xây dựng Agent thật**: Thay thế phần mock bằng việc gọi LLM thật (sử dụng Local LLM như Ollama, vLLM hoặc các Simple LLM API như OpenAI, Gemini).
-2. **Chạy Benchmark thực tế**: Chạy đánh giá trên ít nhất **100 mẫu dữ liệu thật** từ bộ dataset **HotpotQA**.
-3. **Định dạng báo cáo**: Kết quả chạy phải đảm bảo xuất ra file report (`report.json` và `report.md`) có cùng định dạng (format) với code gốc để có thể chạy được công cụ chấm điểm tự động.
-4. **Tính toán Token thực tế**: Thay vì dùng số ước tính, học viên phải cài đặt logic tính toán lượng token tiêu thụ thực tế từ phản hồi của API.
-
-## 3. Cách chạy Lab (Scaffold)
 ```bash
-# Cài đặt môi trường
 python -m venv .venv
-source .venv/bin/activate
+.venv\Scripts\activate
 pip install -r requirements.txt
-
-# Chạy benchmark (với mock data)
-python run_benchmark.py --dataset data/hotpot_mini.json --out-dir outputs/sample_run
-
-# Chạy chấm điểm tự động
-python autograde.py --report-path outputs/sample_run/report.json
 ```
 
-## 4. Tiêu chí chấm điểm (Rubric)
-- **80% số điểm (80 điểm)**: Hoàn thiện đúng và đủ luồng (flow) cho Reflexion Agent, chạy thành công với LLM thật và dataset thật.
-- **20% số điểm (20 điểm)**: Thực hiện thêm ít nhất một trong các phần **Bonus** được nhắc đến trong mã nguồn (ví dụ: `structured_evaluator`, `reflection_memory`, `adaptive_max_attempts`, `memory_compression`, v.v. - xem chi tiết tại `autograde.py`).
+## Environment contract for real mode
 
-## Thành phần mã nguồn
-- `src/reflexion_lab/schemas.py`: Định nghĩa các kiểu dữ liệu trace, record.
-- `src/reflexion_lab/prompts.py`: Nơi chứa các template prompt cho Actor, Evaluator và Reflector.
-- `src/reflexion_lab/mock_runtime.py`: (Cần thay thế) Logic giả lập phản hồi LLM.
-- `src/reflexion_lab/agents.py`: Cấu trúc chính của ReAct và Reflexion Agent.
-- `src/reflexion_lab/reporting.py`: Logic xuất báo cáo benchmark.
-- `run_benchmark.py`: Script chính để chạy đánh giá.
-- `autograde.py`: Công cụ hỗ trợ chấm điểm nhanh dựa trên report.
+Required:
+- `DEFAULT_MODEL`
+- `DEFAULT_BASE_URL`
+- `DEFAULT_API_KEY`
+- `JUDGE_MODEL`
+
+Optional (fallback to `DEFAULT_*` if missing):
+- `JUDGE_BASE_URL`
+- `JUDGE_API_KEY`
+
+## Build 100-sample dataset from a real HotpotQA dump
+
+```bash
+python scripts/prepare_hotpot_100.py --input-path path\to\hotpot_dev_distractor_v1.json --output-path data\hotpot_100.json --sample-size 100 --seed 42
+```
+
+## Run benchmark
+
+Real mode (default):
+
+```bash
+python run_benchmark.py --dataset data/hotpot_100.json --out-dir outputs/final --mode real --reflexion-attempts 3
+```
+
+Warm-up real calls on 1-2 samples before full run:
+
+```bash
+python run_benchmark.py --dataset data/hotpot_100.json --out-dir outputs/warmup --mode real --sample-limit 2
+```
+
+Mock mode smoke test:
+
+```bash
+python run_benchmark.py --dataset data/hotpot_mini.json --out-dir outputs/sample_run --mode mock --reflexion-attempts 3
+```
+
+Outputs:
+- `react_runs.jsonl`
+- `reflexion_runs.jsonl`
+- `report.json`
+- `report.md`
+
+## Autograde
+
+```bash
+python autograde.py --report-path outputs/final/report.json
+```
+
+## Notes
+
+- Real mode fails fast if provider response does not contain `usage.total_tokens`.
+- Cost is tracked from real usage with model pricing support for `gpt-5.4-mini`:
+  - input: `0.75 USD / 1M tokens`
+  - cached input: `0.075 USD / 1M tokens`
+  - output: `1.25 USD / 1M tokens`
+- Final report should be generated from real mode (not mock mode) for submission.

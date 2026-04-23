@@ -21,3 +21,16 @@ def save_jsonl(path: str | Path, records: Iterable[RunRecord]) -> None:
     with path.open("w", encoding="utf-8") as f:
         for record in records:
             f.write(record.model_dump_json() + "\n")
+
+
+def load_jsonl_records(path: str | Path) -> list[RunRecord]:
+    file_path = Path(path)
+    if not file_path.exists():
+        return []
+    records: list[RunRecord] = []
+    for line in file_path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        records.append(RunRecord.model_validate_json(line))
+    return records
