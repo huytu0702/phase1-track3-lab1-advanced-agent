@@ -27,7 +27,6 @@ Tác động chính:
 
 ## Tài liệu liên quan
 
-- [Sample report JSON](file:///F:/vin/phase1-track3-lab1-advanced-agent/outputs/sample_run/report.json)
-- [Sample report Markdown](file:///F:/vin/phase1-track3-lab1-advanced-agent/outputs/sample_run/report.md)
-- [Agent architecture](file:///F:/vin/phase1-track3-lab1-advanced-agent/src/reflexion_lab/AGENTS_ARCHITECTURE.md)
-
+- [Sample report JSON](outputs/sample_run/report.json)
+- [Sample report Markdown](outputs/sample_run/report.md)
+- [Agent architecture](src/reflexion_lab/AGENTS_ARCHITECTURE.md)
