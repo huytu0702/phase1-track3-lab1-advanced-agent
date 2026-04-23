@@ -1,73 +1,33 @@
-# Reflexion Agent Lab (OpenAI-Compatible)
+# Agent Lab
 
-This repo benchmarks `react` vs `reflexion` on HotpotQA-style multi-hop QA with:
-- strict structured evaluator JSON,
-- reflection memory across attempts,
-- adaptive early stopping.
+**Tên:** Nguyễn Huy Tú  
+**MSV:** 2A202600170
 
-## Setup
+## Tôi đã làm gì
 
-```bash
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-```
+- Xây dựng benchmark so sánh `react` và `reflexion` cho bài toán multi-hop QA kiểu HotpotQA.
+- Chạy đánh giá theo luồng có actor, evaluator và báo cáo kết quả đầu ra.
+- Xuất report ở cả dạng JSON và Markdown để tiện kiểm tra và nộp bài.
 
-## Environment contract for real mode
+## Cải thiện thêm
 
-Required:
-- `DEFAULT_MODEL`
-- `DEFAULT_BASE_URL`
-- `DEFAULT_API_KEY`
-- `JUDGE_MODEL`
+Các extensions đã triển khai:
 
-Optional (fallback to `DEFAULT_*` if missing):
-- `JUDGE_BASE_URL`
-- `JUDGE_API_KEY`
+- `structured_evaluator`
+- `reflection_memory`
+- `benchmark_report_json`
+- `adaptive_max_attempts`
 
-## Build 100-sample dataset from a real HotpotQA dump
+Tác động chính:
 
-```bash
-python scripts/prepare_hotpot_100.py --input-path path\to\hotpot_dev_distractor_v1.json --output-path data\hotpot_100.json --sample-size 100 --seed 42
-```
+- Đánh giá nhất quán hơn nhờ output có cấu trúc.
+- Agent nhớ lại lỗi trước đó để sửa trong các lần thử sau.
+- Có report JSON phục vụ phân tích tự động.
+- Dừng sớm khi lỗi lặp lại hoặc không còn khả năng cải thiện.
 
-## Run benchmark
+## Tài liệu liên quan
 
-Real mode (default):
+- [Sample report JSON](file:///F:/vin/phase1-track3-lab1-advanced-agent/outputs/sample_run/report.json)
+- [Sample report Markdown](file:///F:/vin/phase1-track3-lab1-advanced-agent/outputs/sample_run/report.md)
+- [Agent architecture](file:///F:/vin/phase1-track3-lab1-advanced-agent/src/reflexion_lab/AGENTS_ARCHITECTURE.md)
 
-```bash
-python run_benchmark.py --dataset data/hotpot_100.json --out-dir outputs/final --mode real --reflexion-attempts 3
-```
-
-Warm-up real calls on 1-2 samples before full run:
-
-```bash
-python run_benchmark.py --dataset data/hotpot_100.json --out-dir outputs/warmup --mode real --sample-limit 2
-```
-
-Mock mode smoke test:
-
-```bash
-python run_benchmark.py --dataset data/hotpot_mini.json --out-dir outputs/sample_run --mode mock --reflexion-attempts 3
-```
-
-Outputs:
-- `react_runs.jsonl`
-- `reflexion_runs.jsonl`
-- `report.json`
-- `report.md`
-
-## Autograde
-
-```bash
-python autograde.py --report-path outputs/final/report.json
-```
-
-## Notes
-
-- Real mode fails fast if provider response does not contain `usage.total_tokens`.
-- Cost is tracked from real usage with model pricing support for `gpt-5.4-mini`:
-  - input: `0.75 USD / 1M tokens`
-  - cached input: `0.075 USD / 1M tokens`
-  - output: `1.25 USD / 1M tokens`
-- Final report should be generated from real mode (not mock mode) for submission.

@@ -75,29 +75,6 @@ flowchart TD
     style F fill:#ffcdd2
 ```
 
-### Sequence Diagram
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant ReActAgent
-    participant Runtime
-    participant Actor
-    participant Evaluator
-    
-    User->>ReActAgent: run(example)
-    ReActAgent->>Runtime: actor(question, context)
-    Runtime->>Actor: Call LLM
-    Actor-->>Runtime: answer
-    Runtime-->>ReActAgent: RuntimeCall(answer)
-    
-    ReActAgent->>Runtime: evaluator(question, answer, context)
-    Runtime->>Evaluator: Call LLM
-    Evaluator-->>Runtime: JudgeResult(score, reason)
-    Runtime-->>ReActAgent: JudgeResult
-    
-    ReActAgent-->>User: RunRecord(answer, score, failure_mode)
-```
 
 ### Key Metrics (Sau 1 Attempt)
 
@@ -188,53 +165,6 @@ flowchart TD
     end
 ```
 
-### Sequence Diagram (2 Attempts với Reflection)
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant ReflexionAgent
-    participant Runtime
-    participant Actor
-    participant Evaluator
-    participant Reflector
-    
-    User->>ReflexionAgent: run(example)
-    
-    Note over ReflexionAgent: === ATTEMPT 1 ===
-    ReflexionAgent->>Runtime: actor(q, ctx, reflect_mem=[], trajectory=[])
-    Runtime->>Actor: Call LLM
-    Actor-->>Runtime: answer1 = "Paris"
-    Runtime-->>ReflexionAgent: RuntimeCall(answer1)
-    
-    ReflexionAgent->>Runtime: evaluator(q, answer1, ctx)
-    Runtime->>Evaluator: Call LLM
-    Evaluator-->>Runtime: JudgeResult(score=0, failure_mode="entity_drift")
-    Runtime-->>ReflexionAgent: JudgeResult
-    
-    Note over ReflexionAgent: Score ≠ 1, attempt < max_attempts
-    ReflexionAgent->>Runtime: reflector(q, answer1, judge, attempt_id=1)
-    Runtime->>Reflector: Call LLM
-    Reflector-->>Runtime: lesson="Check multi-hop requirements"<br/>strategy="Look for secondary entity"
-    Runtime-->>ReflexionAgent: ReflectionEntry
-    
-    ReflexionAgent->>ReflexionAgent: reflection_memory.append(lesson + strategy)
-    ReflexionAgent->>ReflexionAgent: trajectory.append(attempt1_info)
-    
-    Note over ReflexionAgent: === ATTEMPT 2 ===
-    ReflexionAgent->>Runtime: actor(q, ctx, reflect_mem=[...], trajectory=[...])
-    Runtime->>Actor: Call LLM (with reflection memory)
-    Actor-->>Runtime: answer2 = "London"
-    Runtime-->>ReflexionAgent: RuntimeCall(answer2)
-    
-    ReflexionAgent->>Runtime: evaluator(q, answer2, ctx)
-    Runtime->>Evaluator: Call LLM
-    Evaluator-->>Runtime: JudgeResult(score=1, failure_mode="none")
-    Runtime-->>ReflexionAgent: JudgeResult
-    
-    Note over ReflexionAgent: Score = 1, SUCCESS!
-    ReflexionAgent-->>User: RunRecord(answer=answer2, attempts=2, reflections=[...])
-```
 
 ### Key Metrics (Qua Nhiều Attempts)
 
