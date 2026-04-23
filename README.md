@@ -17,6 +17,8 @@ Các extensions đã triển khai:
 - `reflection_memory`
 - `benchmark_report_json`
 - `adaptive_max_attempts`
+- `retry`
+- `backoff`
 
 Tác động chính:
 
@@ -24,6 +26,7 @@ Tác động chính:
 - Agent nhớ lại lỗi trước đó để sửa trong các lần thử sau.
 - Có report JSON phục vụ phân tích tự động.
 - Dừng sớm khi lỗi lặp lại hoặc không còn khả năng cải thiện.
+- `retry` và `backoff` giúp giảm lỗi tạm thời khi gọi API, tăng độ ổn định khi chạy benchmark.
 
 ## Tài liệu liên quan
 
